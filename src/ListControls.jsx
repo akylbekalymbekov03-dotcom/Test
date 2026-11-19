@@ -1,0 +1,39 @@
+import React,{useEffect,useLayoutEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
+import {isoDate} from './list-utils.js';
+
+function Popover({anchor,title,width,children,onClose}){
+ const box=useRef(null),[position,setPosition]=useState({top:0,left:0});
+ useLayoutEffect(()=>{
+   const move=()=>{const rect=anchor.current?.getBoundingClientRect();if(!rect)return;const actualWidth=Math.min(width,window.innerWidth-24),height=box.current?.offsetHeight||300;setPosition({left:Math.max(12,Math.min(rect.right-actualWidth,window.innerWidth-actualWidth-12)),top:rect.bottom+8+height<=window.innerHeight-12?rect.bottom+8:Math.max(12,rect.top-height-8)})};
+   move();window.addEventListener('resize',move);window.addEventListener('scroll',move,true);
+   return()=>{window.removeEventListener('resize',move);window.removeEventListener('scroll',move,true)};
+ },[anchor,width]);
+ useEffect(()=>{box.current?.querySelector('button:not(:disabled)')?.focus({preventScroll:true});const outside=e=>{if(!box.current?.contains(e.target)&&!anchor.current?.contains(e.target))onClose()};const key=e=>{if(e.key==='Escape'){e.preventDefault();onClose();anchor.current?.querySelector('button')?.focus()}};document.addEventListener('pointerdown',outside);document.addEventListener('keydown',key);return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',key)}},[onClose]);
+ return createPortal(<section ref={box} role="dialog" aria-label={title} className="enter" style={{position:'fixed',...position,zIndex:30,width,maxWidth:'calc(100vw - 24px)',maxHeight:'calc(100dvh - 24px)',overflow:'auto',background:'white',border:'1px solid #d6d5d1',borderRadius:12,boxShadow:'0 4px 14px #0002'}}>{children}</section>,document.body);
+}
+export function ColumnsPopover({anchor,columns,hidden,onToggle,Icon,onClose}){
+ return <Popover anchor={anchor} title="Показывать колонки" width={300} onClose={onClose}><div role="menu" aria-label="Показывать колонки" onKeyDown={e=>{if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const items=[...e.currentTarget.querySelectorAll('button:not(:disabled)')];const current=items.indexOf(document.activeElement);const next=e.key==='Home'?0:e.key==='End'?items.length-1:(current+(e.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next]?.focus()}}}><p style={{padding:'8px 12px',color:'#42413d',lineHeight:'20px'}}>Показывать колонки</p>{columns.map((label,i)=><button key={label} role="menuitemcheckbox" aria-checked={!hidden.includes(i)} disabled={i===0} onClick={()=>onToggle(i)} style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',minHeight:32,padding:'6px 12px',border:0,background:'white',textAlign:'left',opacity:1}}>{label}{!hidden.includes(i)&&<Icon name="ColumnCheck"/>}</button>)}</div></Popover>;
+}
+export function RangeCalendar({anchor,range,onChange,onClose,Button,Icon}){
+ const [month,setMonth]=useState(()=>new Date((range[0]||'2026-11-01')+'T12:00:00Z'));
+ const [start,setStart]=useState(null),[hover,setHover]=useState(null);
+ const displayStart=start||range[0],displayEnd=start?(hover||start):range[1];
+ const from=displayStart&&displayEnd?[displayStart,displayEnd].sort()[0]:displayStart;
+ const to=displayStart&&displayEnd?[displayStart,displayEnd].sort()[1]:displayEnd;
+ const pick=day=>{if(!start){setStart(day);setHover(day)}else{onChange([start,day].sort());onClose()}};
+ return <Popover anchor={anchor} title="Выбрать период" width={488} onClose={onClose}><div style={{display:'flex',gap:16,padding:12,flexWrap:'wrap'}}>{[0,1].map(offset=>{
+   const first=new Date(Date.UTC(month.getUTCFullYear(),month.getUTCMonth()+offset,1,12));
+   const before=(first.getUTCDay()+6)%7,last=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,0)).getUTCDate();
+   const count=Math.ceil((before+last)/7)*7;
+   return <section key={offset} style={{flex:'1 1 216px',minWidth:0}} aria-label={new Intl.DateTimeFormat('ru-RU',{timeZone:'UTC',month:'long',year:'numeric'}).format(first)}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',height:32,marginBottom:12}}>{offset===0?<Button aria-label="Предыдущий месяц" onClick={()=>setMonth(new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()-1,1,12)))} style={{background:'transparent',minHeight:24,padding:4}}><Icon name="ChevronLeft"/></Button>:<span style={{width:24}}/>}<p style={{fontWeight:500,textTransform:'capitalize'}}>{new Intl.DateTimeFormat('ru-RU',{timeZone:'UTC',month:'long',year:'numeric'}).format(first).replace(/ г\.$/,'')}</p>{offset===1?<Button aria-label="Следующий месяц" onClick={()=>setMonth(new Date(Date.UTC(month.getUTCFullYear(),month.getUTCMonth()+1,1,12)))} style={{background:'transparent',minHeight:24,padding:4}}><Icon name="ChevronRight"/></Button>:<span style={{width:24}}/>}</div>
+   <div style={{display:'grid',gridTemplateColumns:'repeat(7,minmax(0,1fr))',rowGap:4}}>{['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(day=><span key={day} style={{textAlign:'center',fontSize:12,color:'#42413d',lineHeight:'28px'}}>{day}</span>)}{Array.from({length:count},(_,i)=>{const date=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth(),i-before+1,12)),iso=isoDate(date),edge=iso===from||iso===to,within=from&&to&&iso>=from&&iso<=to,outside=date.getUTCMonth()!==first.getUTCMonth();return <button key={iso} aria-label={new Intl.DateTimeFormat('ru-RU',{timeZone:'UTC',day:'numeric',month:'long',year:'numeric'}).format(date).replace(/ г\.$/,'')} aria-pressed={!!edge} onMouseEnter={()=>{if(start)setHover(iso)}} onClick={()=>pick(iso)} style={{height:32,minWidth:0,border:0,borderRadius:edge?8:0,background:edge?'#161513':within?'#f3f2f0':'white',color:edge?'white':outside?'#8b8983':'#0b0b0a',padding:0}}>{date.getUTCDate()}</button>})}</div></section>;
+ })}</div></Popover>;
+}
+
+export function ListState({state,Icon,Button,onReset,onUpload,onRetry,readOnly=false}){
+ if(state==='loading')return <div role="status" aria-label="Загрузка поставок" style={{paddingTop:8}}><style>{`@keyframes skeleton{50%{opacity:.4}}.skeleton{background:#f3f2f0;border-radius:6px;animation:skeleton 1.3s ease-in-out infinite}`}</style>{Array.from({length:6},(_,i)=><div key={i} style={{display:'flex',gap:24,padding:20,borderBottom:'1px solid #f7f6f4'}}>{[80,120,180,120].map((w,k)=><div key={k} className="skeleton" style={{height:20,width:w,maxWidth:'25%'}}/>)}</div>)}</div>;
+ if(state==='error')return <div style={{minHeight:360}}><div role="alert" style={{display:'flex',gap:12,border:'1px solid #f7f6f4',borderRadius:10,padding:'12px 16px',lineHeight:'20px',color:'#e7000b'}}><Icon name="CashAlert"/><div><p>Не удалось загрузить данные</p><p>Проверьте интернет и попробуйте ещё раз.</p></div></div><Button onClick={onRetry} style={{background:'white',borderColor:'#f7f6f4',marginTop:16}}>Повторить</Button></div>;
+ const empty=state==='empty';
+ return <div style={{minHeight:420,display:'flex',alignItems:'center',justifyContent:'center',padding:32}}><div style={{maxWidth:430,textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:16}}><span style={{display:'flex',alignItems:'center',justifyContent:'center',width:40,height:40,borderRadius:12,background:'#f3f2f0'}}><Icon name="EmptyFolder"/></span><h2 style={{fontSize:18}}>{empty?'Поставок пока нет':'Ничего не найдено'}</h2><p style={{color:'#42413d',lineHeight:'20px'}}>{empty?readOnly?'Здесь появятся ваши поставки.':'Здесь появятся ваши поставки. Загрузите файл с накладными.':'Измените запрос или сбросьте фильтры, чтобы увидеть поставки.'}</p>{(!empty||!readOnly)&&<Button primary={empty} icon={empty?'CloudUpload':undefined} style={empty?{marginTop:8}:{marginTop:8,background:'white',borderColor:'#f7f6f4'}} onClick={empty?onUpload:onReset}>{empty?'Загрузить накладные':'Сбросить фильтры'}</Button>}</div></div>;
+}

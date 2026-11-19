@@ -1,0 +1,14 @@
+.summary-card{border:0;text-align:left;padding:20px;border-radius:18px;background:#f3f2f0;color:#0b0b0a;min-width:0;min-height:132px;cursor:default;display:flex;flex-direction:column;justify-content:space-between;gap:20px;container-type:inline-size}
+.summary-card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-height:40px;color:#42413d;font-size:14px;font-weight:400;line-height:20px}
+.summary-card-heading>span:first-child{padding-top:6px;min-width:0}
+.summary-card-icon{width:32px;height:32px;flex:0 0 32px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#e9e8e5}
+.summary-card-icon img{display:block;width:20px;height:20px;flex-shrink:0}
+.summary-card-value{font-size:24px;font-size:clamp(20px,12.5cqw,28px);font-weight:500;line-height:1.25;letter-spacing:-.8px;min-width:0}
+.summary-card-value .motion-number-current{white-space:nowrap}
+.summary-card-value .motion-number-unit{font-size:14px;letter-spacing:0}
+.summary-card-primary{background:#ffcc02;color:#0b0b0a}
+.summary-card-primary .summary-card-heading{color:#0b0b0a}
+.summary-card-primary .summary-card-icon{background:#0b0b0a0d}
+.summary-card-primary .summary-card-icon img{filter:brightness(0)}
+@media(min-width:761px) and (max-width:1260px){.summary,.expense-totals,.cp-totals{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:760px){.summary-card{padding:16px;min-height:128px;gap:16px}.summary-card-heading{gap:8px}.summary-card-value{letter-spacing:-.5px}.summary-card-value .motion-number-unit{font-size:12px}}

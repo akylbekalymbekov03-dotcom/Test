@@ -1,0 +1,42 @@
+:root{--motion-quick:140ms;--motion-control:240ms;--motion-surface:300ms;--motion-settle:cubic-bezier(.18,.82,.24,1);--motion-spring:cubic-bezier(.2,.9,.3,1.12)}
+body button,body input,body :is(select,.status-select-trigger){transition:background-color var(--motion-control) var(--motion-settle),color var(--motion-quick),box-shadow var(--motion-control),border-color var(--motion-quick),transform var(--motion-control) var(--motion-spring)}
+body button:active:not(:disabled){transform:scale(.97);transition-duration:90ms}
+body input[type=checkbox]{transition:background-color 160ms,border-color 160ms,box-shadow 160ms,transform 160ms var(--motion-spring)}
+body input[type=checkbox]:active:not(:disabled){transform:scale(.88)}
+body input[type=checkbox]:checked{animation:motion-check-in 220ms var(--motion-spring)}
+[data-motion-segment]{position:relative;isolation:isolate}
+[data-motion-segment]::before{content:'';position:absolute;left:0;top:0;width:var(--motion-tab-w,0px);height:var(--motion-tab-h,0px);transform:translate3d(var(--motion-tab-x,0px),var(--motion-tab-y,0px),0);border-radius:6px;background:white;box-shadow:0 1px 3px #00000012;opacity:var(--motion-tab-opacity,0);pointer-events:none;z-index:0;transition:transform 260ms var(--motion-spring),width 240ms var(--motion-settle),height 240ms var(--motion-settle),opacity 120ms}
+[data-motion-segment="initial"]::before{transition:none}
+[data-motion-segment]>button{position:relative;z-index:1;background:transparent!important;box-shadow:none!important}
+[data-motion-segment]>button:hover:not(:disabled){background:#ffffff30!important;box-shadow:none!important}
+.motion-number{display:inline-block;position:relative;max-width:100%;vertical-align:bottom}
+.motion-number-current{display:block}
+.motion-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.motion-number-glyph{display:inline-block;white-space:pre}
+.motion-number-unit{font-size:inherit;letter-spacing:0;white-space:nowrap}
+.delivery-total-value .motion-number-unit{font-size:14px}
+.motion-number-previous{position:absolute;inset:0 auto auto 0;white-space:nowrap;pointer-events:none;animation:motion-number-out 160ms var(--motion-settle) both}
+.motion-number[data-changing=true] .motion-number-current .motion-number-glyph{animation:motion-number-in 240ms var(--motion-settle) var(--digit-delay,0ms) both}
+.motion-number[data-changing=true] .motion-number-current .motion-number-unit{animation:motion-number-in 220ms var(--motion-settle) both}
+.veil:not(.motion-closing){animation:motion-veil-in 200ms ease-out both}
+.veil .dialog{animation:motion-dialog-in 280ms var(--motion-spring) both}
+.veil .drawer{animation:motion-drawer-in 320ms var(--motion-settle) both}
+.veil.motion-closing{animation:motion-veil-out 160ms ease-in both}
+.veil.motion-closing>section{pointer-events:none}
+.veil.motion-closing .dialog{animation:motion-dialog-out 150ms ease-in both}
+.veil.motion-closing .drawer{animation:motion-drawer-out 160ms ease-in both}
+body .pr-menu,.pt-popover,.wh-product-popover{transform-origin:top right;animation:motion-popover-in 200ms var(--motion-spring) both}
+body .navitem img{transition:transform 220ms var(--motion-spring)}
+body .navitem:hover img{transform:translateX(2px) rotate(-4deg)}
+@keyframes motion-check-in{0%{transform:scale(.86)}65%{transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes motion-number-in{from{opacity:0;transform:translateY(9px);filter:blur(3px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes motion-number-out{to{opacity:0;transform:translateY(-7px);filter:blur(3px)}}
+@keyframes motion-veil-in{from{opacity:0}to{opacity:1}}
+@keyframes motion-veil-out{to{opacity:0}}
+@keyframes motion-dialog-in{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes motion-dialog-out{to{opacity:0;transform:translateY(6px) scale(.985)}}
+@keyframes motion-drawer-in{from{opacity:.6;transform:translateX(32px)}to{opacity:1;transform:none}}
+@keyframes motion-drawer-out{to{opacity:0;transform:translateX(24px)}}
+@keyframes motion-popover-in{from{opacity:0;transform:translateY(-4px) scale(.97)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.motion-number-previous{display:none!important}}
+@media(max-width:760px){.delivery-total-value .motion-number-unit{font-size:12px}}

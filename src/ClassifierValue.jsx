@@ -1,0 +1,3 @@
+import React from 'react';
+import {classifierChanged} from './classifiers-model.js';
+export function ClassifierValue({catalog,kind,value,children}){const changed=classifierChanged(catalog,kind,value);return <span style={changed?{color:'#e7000b'}:undefined}>{children??value}{changed&&<span role="img" aria-label="Есть изменения в классификаторе" title="Есть изменения в классификаторе" style={{display:'inline-flex',alignItems:'center',justifyContent:'center',marginLeft:6,width:14,height:14,border:'1px solid currentColor',borderRadius:'50%',fontSize:10,lineHeight:'12px',verticalAlign:'middle'}}>?</span>}</span>}
